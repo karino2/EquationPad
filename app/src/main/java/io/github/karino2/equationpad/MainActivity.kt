@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
                 val pare = it.parent!!
                 val newTerm = Subscript(it, Variable("x"))
                 pare.replace(it, newTerm)
-                mathView.selectedExpr = newTerm
+                mathView.selectedExpr = newTerm.sub
             }
         }
     }
