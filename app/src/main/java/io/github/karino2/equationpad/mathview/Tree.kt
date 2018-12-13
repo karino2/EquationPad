@@ -1,6 +1,7 @@
 package io.github.karino2.equationpad.mathview
 
 import android.graphics.Paint
+import android.graphics.RectF
 import kotlin.IllegalArgumentException
 
 data class Box(var left:Float = 0f, var top:Float = 0f, var width:Float = 0f, var height:Float = 0f) {
@@ -9,6 +10,8 @@ data class Box(var left:Float = 0f, var top:Float = 0f, var width:Float = 0f, va
 
     val bottom
     get() = top+height
+
+    fun toRectF(scale : Float) = RectF(left*scale, top*scale, right*scale, bottom*scale)
 }
 
 

@@ -5,8 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import kotlin.math.roundToInt
@@ -14,6 +12,7 @@ import kotlin.math.roundToInt
 class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet) {
 
     val expr = Subscript(Variable("a"), Variable("x"))
+    var selectedExpr : Expr? = expr.body
 
     fun _resolveSize(desiredSize: Int, measureSpec: Int) : Int {
         val specMode = MeasureSpec.getMode(measureSpec)
@@ -35,6 +34,12 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
 
     val paint = Paint(ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
+    }
+
+    val selectionPaint = Paint(ANTI_ALIAS_FLAG).apply {
+        color = Color.argb(0xff, 0x91, 0x50, 0x0c)
+        style = Paint.Style.STROKE
+        strokeWidth = 5f
     }
 
 
@@ -64,8 +69,6 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         val widthResizable = widthSpecMode != MeasureSpec.EXACTLY
         val heightResizable = heightSpecMode != MeasureSpec.EXACTLY
 
-        val widthScale = intrinsicWidth.toDouble()/widthSize.toDouble()
-        var heightScale = intrinsicHeight.toDouble()/heightSize.toDouble()
         var done = false
 
         if(widthResizable) {
@@ -102,6 +105,10 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         var fmi = paint.fontMetrics
 
         drawExpr(canvas, scale, expr, fmi.bottom)
+
+        selectedExpr?.let {
+            canvas.drawRect(it.box.toRectF(scale).apply {left+=PADDING}, selectionPaint)
+        }
     }
 
 
@@ -133,7 +140,7 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         canvas.drawText(
             expr.name,
             expr.box.left*scale+PADDING,
-            y,
+             y,
             _paint)
     }
 
