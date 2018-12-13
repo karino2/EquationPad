@@ -32,6 +32,10 @@ sealed class Expr {
 
     var box = Box()
 
+    fun parentNullIfSelf(elem: Expr) {
+        if(elem.parent == this)
+            elem.parent = null
+    }
 
 
     // tree related property
@@ -53,7 +57,7 @@ sealed class Expr {
 
 }
 
-data class Root(var child : Expr? = null) : Expr() {
+class Root(var child : Expr? = null) : Expr() {
     init {
         child?.parent = this
     }
@@ -74,7 +78,7 @@ data class Root(var child : Expr? = null) : Expr() {
     override fun replace(org: Expr, newExp: Expr) {
         if(org == child)
         {
-            org.parent = null
+            parentNullIfSelf(org)
             newExp.parent = this
 
             child = newExp
@@ -84,7 +88,7 @@ data class Root(var child : Expr? = null) : Expr() {
     }
 }
 
-data class Variable(val name: String) : Expr() {
+class Variable(val name: String) : Expr() {
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
         box.left = left
         box.top = top
@@ -93,13 +97,13 @@ data class Variable(val name: String) : Expr() {
     }
 }
 
-data class Subscript(var body: Expr, var sub:Expr) : Expr(){
+class Subscript(var body: Expr, var sub:Expr) : Expr(){
     val PADDING = 1f
 
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
         body.layout(left, top, currentSize, measure)
         with(body.box) {
-            sub.layout(right+PADDING, top+(height*2f)/3f, currentSize/3, measure)
+            sub.layout(right+PADDING, top+(height*1f)/2f, currentSize/2f, measure)
         }
         box.left = left
         box.top = top
@@ -116,7 +120,7 @@ data class Subscript(var body: Expr, var sub:Expr) : Expr(){
     override fun replace(org: Expr, newExp: Expr) {
         if(org == body)
         {
-            body.parent = null
+            parentNullIfSelf(org)
             newExp.parent = this
 
             body = newExp
@@ -124,7 +128,7 @@ data class Subscript(var body: Expr, var sub:Expr) : Expr(){
         }
         if(org == sub)
         {
-            sub.parent = null
+            parentNullIfSelf(org)
             newExp.parent = this
 
             sub = newExp

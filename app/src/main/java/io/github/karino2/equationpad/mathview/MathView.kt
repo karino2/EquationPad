@@ -15,6 +15,10 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
 
     val expr = Root(Subscript(Variable("a"), Variable("x")))
     var selectedExpr : Expr? = null
+        set(value) {
+            field = value
+            requestLayout()
+        }
 
     fun _resolveSize(desiredSize: Int, measureSpec: Int) : Int {
         val specMode = MeasureSpec.getMode(measureSpec)
@@ -49,12 +53,13 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
     // I first hard code default height of top variable as 100dp.
     val INITIAL_SIZE = 1000f
     val DEFAULT_SCALE = 400.0/INITIAL_SIZE
+    val MARGIN = 5f
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         expr.layout(0f, 0f, INITIAL_SIZE) { text, size-> (paint.apply { textSize =   (size*DEFAULT_SCALE).toFloat() }.measureText(text)/DEFAULT_SCALE).toFloat()}
 
-        val intrinsicWidthF = (expr.box.width*DEFAULT_SCALE)
-        val intrinsicHeightF = (expr.box.height*DEFAULT_SCALE)
+        val intrinsicWidthF = (expr.box.width*DEFAULT_SCALE)+MARGIN
+        val intrinsicHeightF = (expr.box.height*DEFAULT_SCALE)+MARGIN
 
         val intrinsicWidth = intrinsicWidthF.roundToInt()
         val intrinsicHeight = intrinsicHeightF.roundToInt()
@@ -99,8 +104,6 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
     val boxToViewScale
         get() = Math.min(measuredWidth/expr.box.width, measuredHeight/expr.box.height)
 
-    var bottomMargin = 0f
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -110,29 +113,26 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         // expr.box.width
 
         paint.apply { textSize = expr.box.height * boxToViewScale }
-        var fmi = paint.fontMetrics
-
-        bottomMargin = fmi.bottom
-        drawExpr(canvas, boxToViewScale, expr, bottomMargin)
+        drawExpr(canvas, boxToViewScale, expr)
 
         selectedExpr?.let {
-            canvas.drawRect(it.box.toRectF(boxToViewScale).apply{ offset(PADDING.toFloat(), -bottomMargin) }, selectionPaint)
+            canvas.drawRect(it.box.toRectF(boxToViewScale).apply{ offset(5f, 5f); bottom -= 10f; right -=10f }, selectionPaint)
         }
     }
 
 
 
-    fun drawExpr(canvas: Canvas, scale : Float, expr: Expr, bottomMargin: Float) {
+    fun drawExpr(canvas: Canvas, scale: Float, expr: Expr) {
         when(expr) {
             is Variable -> {
-                drawVariable(canvas, scale, expr, bottomMargin)
+                drawVariable(canvas, scale, expr)
             }
             is Subscript -> {
-                drawExpr(canvas, scale, expr.body, bottomMargin)
-                drawExpr(canvas, scale, expr.sub, bottomMargin)
+                drawExpr(canvas, scale, expr.body)
+                drawExpr(canvas, scale, expr.sub)
             }
             is Root -> {
-                expr.child?.let { drawExpr(canvas, scale, it, bottomMargin) }
+                expr.child?.let { drawExpr(canvas, scale, it) }
             }
         }
     }
@@ -141,7 +141,7 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         when(event.action) {
             ACTION_DOWN-> {
                 val x = event.x/boxToViewScale
-                val y = (event.y+bottomMargin)/boxToViewScale
+                val y = (event.y)/boxToViewScale
                 selectedExpr = expr.findHit(x, y)
                 invalidate()
                 return true
@@ -150,21 +150,20 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         return super.onTouchEvent(event)
     }
 
-    val PADDING = 5
-
     private fun drawVariable(
         canvas: Canvas,
         scale: Float,
-        expr: Variable,
-        bottomMargin: Float
+        expr: Variable
     ) {
 
         val _paint = paint.apply { textSize = expr.box.height * scale }
-        val y = expr.box.bottom*scale-bottomMargin-PADDING
+
+        var fmi = _paint.fontMetrics
+        val y = expr.box.bottom*scale-fmi.bottom
 
         canvas.drawText(
             expr.name,
-            expr.box.left*scale+PADDING,
+            expr.box.left*scale,
              y,
             _paint)
     }
