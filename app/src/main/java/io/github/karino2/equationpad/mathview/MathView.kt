@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.util.AttributeSet
+import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_DOWN
 import android.view.View
 import kotlin.math.roundToInt
 
@@ -49,7 +51,6 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
     val DEFAULT_SCALE = 400.0/INITIAL_SIZE
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val initialSize = 1000f
         expr.layout(0f, 0f, INITIAL_SIZE) { text, size-> (paint.apply { textSize =   (size*DEFAULT_SCALE).toFloat() }.measureText(text)/DEFAULT_SCALE).toFloat()}
 
         val intrinsicWidthF = (expr.box.width*DEFAULT_SCALE)
@@ -95,19 +96,27 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         setMeasuredDimension(widthSize, heightSize)
     }
 
+    val boxToViewScale
+        get() = Math.min(measuredWidth/expr.box.width, measuredHeight/expr.box.height)
+
+    var bottomMargin = 0f
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // expr.box.width
-        val scale = Math.min(measuredWidth/expr.box.width, measuredHeight/expr.box.height)
+        // for debug
+        canvas.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply{color=Color.LTGRAY})
 
-        paint.apply { textSize = expr.box.height * scale }
+        // expr.box.width
+
+        paint.apply { textSize = expr.box.height * boxToViewScale }
         var fmi = paint.fontMetrics
 
-        drawExpr(canvas, scale, expr, fmi.bottom)
+        bottomMargin = fmi.bottom
+        drawExpr(canvas, boxToViewScale, expr, bottomMargin)
 
         selectedExpr?.let {
-            canvas.drawRect(it.box.toRectF(scale).apply {left+=PADDING}, selectionPaint)
+            canvas.drawRect(it.box.toRectF(boxToViewScale).apply{ offset(PADDING.toFloat(), -bottomMargin) }, selectionPaint)
         }
     }
 
@@ -123,6 +132,19 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
                 drawExpr(canvas, scale, expr.sub, bottomMargin)
             }
         }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when(event.action) {
+            ACTION_DOWN-> {
+                val x = event.x/boxToViewScale
+                val y = (event.y+bottomMargin)/boxToViewScale
+                selectedExpr = expr.findHit(x, y)
+                invalidate()
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
     }
 
     val PADDING = 5

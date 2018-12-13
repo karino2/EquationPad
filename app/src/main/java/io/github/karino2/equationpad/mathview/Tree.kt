@@ -12,6 +12,8 @@ data class Box(var left:Float = 0f, var top:Float = 0f, var width:Float = 0f, va
     get() = top+height
 
     fun toRectF(scale : Float) = RectF(left*scale, top*scale, right*scale, bottom*scale)
+
+    fun isInside(x: Float, y:Float) = (x >= left && x <= right && y >= top && y <= bottom)
 }
 
 
@@ -42,6 +44,12 @@ sealed class Expr {
 
     abstract fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float)
 
+    open fun findHit(x: Float, y:Float) : Expr? {
+        if(box.isInside(x, y))
+            return this
+
+        return null
+    }
 
 
     /*
@@ -125,4 +133,19 @@ data class Subscript(var body: Expr, var sub:Expr) : Expr(){
         }
         throw IllegalArgumentException("No org expression in this term.")
     }
+
+    override fun findHit(x: Float, y: Float): Expr? {
+        if(!box.isInside(x, y))
+            return null
+
+        body.findHit(x, y)?.let {
+            return it
+        }
+
+        sub.findHit(x, y)?.let {
+            return it
+        }
+        return this
+    }
+
 }
