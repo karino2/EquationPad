@@ -13,8 +13,8 @@ import kotlin.math.roundToInt
 
 class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet) {
 
-    val expr = Subscript(Variable("a"), Variable("x"))
-    var selectedExpr : Expr? = expr.body
+    val expr = Root(Subscript(Variable("a"), Variable("x")))
+    var selectedExpr : Expr? = null
 
     fun _resolveSize(desiredSize: Int, measureSpec: Int) : Int {
         val specMode = MeasureSpec.getMode(measureSpec)
@@ -130,6 +130,9 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
             is Subscript -> {
                 drawExpr(canvas, scale, expr.body, bottomMargin)
                 drawExpr(canvas, scale, expr.sub, bottomMargin)
+            }
+            is Root -> {
+                expr.child?.let { drawExpr(canvas, scale, it, bottomMargin) }
             }
         }
     }

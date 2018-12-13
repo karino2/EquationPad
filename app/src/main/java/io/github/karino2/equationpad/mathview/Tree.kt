@@ -51,44 +51,37 @@ sealed class Expr {
         return null
     }
 
+}
 
-    /*
-
-    val children by lazy{
-        ArrayList<Expr>()
+data class Root(var child : Expr? = null) : Expr() {
+    init {
+        child?.parent = this
     }
 
+    override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
+        child?.let {
+            it.layout(left, top, currentSize, measure)
+            box = it.box
+        }
 
-    // next sibling
-    val next : Expr?
-    get() {
-        val pare = parent ?: return null
-        if(this == pare.children.last())
-            return null
+    }
+    override fun findHit(x: Float, y:Float) : Expr? {
+        child?.let{ return it.findHit(x, y) }
 
-        // parent must contain this, and
-        val idx = pare.children.indexOf(this)
-        return pare.children[idx+1]
+        return null
     }
 
-    val firstChild: Expr?
-    get() {
-        if(children.size == 0)
-            return null
-        return children[0]
-    }
+    override fun replace(org: Expr, newExp: Expr) {
+        if(org == child)
+        {
+            org.parent = null
+            newExp.parent = this
 
-    fun addChild(child : Expr) {
-        child.parent = this
-        children.add(child)
+            child = newExp
+            return
+        }
+        throw IllegalArgumentException("No org expression in root.")
     }
-
-    fun removeChild(child: Expr) {
-        children.remove(child)
-        child.parent = null
-    }
-    */
-
 }
 
 data class Variable(val name: String) : Expr() {
@@ -123,11 +116,17 @@ data class Subscript(var body: Expr, var sub:Expr) : Expr(){
     override fun replace(org: Expr, newExp: Expr) {
         if(org == body)
         {
+            body.parent = null
+            newExp.parent = this
+
             body = newExp
             return
         }
         if(org == sub)
         {
+            sub.parent = null
+            newExp.parent = this
+
             sub = newExp
             return
         }
