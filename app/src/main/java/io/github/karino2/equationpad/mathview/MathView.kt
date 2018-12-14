@@ -92,7 +92,11 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
                 done = true
             }
         }
-        if(!done && heightResizable) {
+
+        if(!done && heightResizable
+            // if height is larger than intrinsicHeight, just keep as is.
+            // wide mathview is OK for most of the case.
+            && heightSize < intrinsicHeight) {
             val heightCand = (widthSize*intrinsicHeightF/intrinsicWidthF).roundToInt()
             if(!widthResizable) {
                 heightSize = _resolveSize(heightCand, heightMeasureSpec)
