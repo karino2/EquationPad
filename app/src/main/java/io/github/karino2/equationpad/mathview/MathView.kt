@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
@@ -41,8 +42,9 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
 
     }
 
-    val paint = Paint(ANTI_ALIAS_FLAG).apply {
+    val textPaint = Paint(ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
+        typeface = Typeface.create("serif-monospace", Typeface.NORMAL)
     }
 
     val selectionPaint = Paint(ANTI_ALIAS_FLAG).apply {
@@ -59,7 +61,7 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
     val MARGIN = 5f
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        expr.layout(0f, 0f, INITIAL_SIZE) { text, size-> (paint.apply { textSize =   (size*DEFAULT_SCALE).toFloat() }.measureText(text)/DEFAULT_SCALE).toFloat()}
+        expr.layout(0f, 0f, INITIAL_SIZE) { text, size-> (textPaint.apply { textSize =   (size*DEFAULT_SCALE).toFloat() }.measureText(text)/DEFAULT_SCALE).toFloat()}
 
         val intrinsicWidthF = (expr.box.width*DEFAULT_SCALE)+MARGIN
         val intrinsicHeightF = (expr.box.height*DEFAULT_SCALE)+MARGIN
@@ -119,7 +121,7 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
 
         // expr.box.width
 
-        paint.apply { textSize = expr.box.height * boxToViewScale }
+        textPaint.apply { textSize = expr.box.height * boxToViewScale }
         drawExpr(canvas, boxToViewScale, expr)
 
         selectedExpr?.let {
@@ -163,7 +165,7 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         expr: Variable
     ) {
 
-        val _paint = paint.apply { textSize = expr.box.height * scale }
+        val _paint = textPaint.apply { textSize = expr.box.height * scale }
 
         var fmi = _paint.fontMetrics
         val y = expr.box.bottom*scale-fmi.bottom
