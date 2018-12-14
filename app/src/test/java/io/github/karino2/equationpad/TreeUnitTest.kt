@@ -70,23 +70,25 @@ class VariableUnitTest {
         val vari = Variable("x")
         assertEquals("x", vari.name)
     }
-
-
-    /*
-    @Test
-    fun addChild_parentCorrect() {
-
-        val pare = Variable("parent")
-        val child = Variable("child")
-
-        pare.addChild(child)
-
-        assertNull(pare.parent)
-        assertEquals(child, pare.firstChild)
-        assertEquals(pare, child.parent)
-    }
-    */
-
-
-
 }
+
+class ToLatexUnitTest {
+    @Test
+    fun most_basic() {
+        val vari = Variable("x")
+        assertEquals("x", vari.toLatex())
+    }
+
+    @Test
+    fun subscript_basic() {
+        val sub = Subscript(Variable("x"), Variable("n"))
+        assertEquals("x_n", sub.toLatex())
+    }
+
+    @Test
+    fun subscript_nest() {
+        val sub = Subscript(Subscript(Variable("x"), Variable("n")), Variable("y"))
+        assertEquals("{x_n}_y", sub.toLatex())
+    }
+}
+

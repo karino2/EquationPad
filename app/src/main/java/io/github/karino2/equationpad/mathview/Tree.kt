@@ -55,9 +55,32 @@ sealed class Expr {
         return null
     }
 
+    abstract fun toLatex(builder: StringBuilder)
+
+    fun toLatexTerm(expr: Expr, builder: java.lang.StringBuilder) {
+        when(expr) {
+            is Variable -> expr.toLatex(builder)
+            else -> {
+                builder.append("{")
+                expr.toLatex(builder)
+                builder.append("}")
+            }
+        }
+    }
+
+    fun toLatex(): String {
+        val builder = StringBuilder()
+        toLatex(builder)
+        return builder.toString()
+    }
+
 }
 
 class Root(var child : Expr? = null) : Expr() {
+    override fun toLatex(builder: StringBuilder) {
+        child?.let { it.toLatex(builder) }
+    }
+
     init {
         child?.parent = this
     }
@@ -89,6 +112,10 @@ class Root(var child : Expr? = null) : Expr() {
 }
 
 class Variable(val name: String) : Expr() {
+    override fun toLatex(builder: StringBuilder) {
+        builder.append(name)
+    }
+
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
         box.left = left
         box.top = top
@@ -99,6 +126,12 @@ class Variable(val name: String) : Expr() {
 
 class Subscript(var body: Expr, var sub:Expr) : Expr(){
     val PADDING = 1f
+
+    override fun toLatex(builder: StringBuilder) {
+        toLatexTerm(body, builder)
+        builder.append("_")
+        toLatexTerm(sub, builder)
+    }
 
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
         body.layout(left, top, currentSize, measure)

@@ -13,12 +13,15 @@ import kotlin.math.roundToInt
 
 class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet) {
 
-    val expr = Root(Subscript(Variable("a"), Variable("x")))
+    val expr = Root(Variable("x"))
     var selectedExpr : Expr? = null
         set(value) {
             field = value
             requestLayout()
         }
+
+    fun ifSelected(proc: (Expr)->Unit) = selectedExpr?.let{ proc(it) }
+
 
     fun _resolveSize(desiredSize: Int, measureSpec: Int) : Int {
         val specMode = MeasureSpec.getMode(measureSpec)
