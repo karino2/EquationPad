@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.buttonSubscript).setOnClickListener {
             mathView.ifSelected { selected ->
                 val pare = selected.parent!!
-                val newTerm = Subscript(selected, Variable("x"))
+                val newTerm = Subscript(selected, Variable("n"))
                 pare.replace(selected, newTerm)
                 mathView.selectedExpr = newTerm.sub
             }
