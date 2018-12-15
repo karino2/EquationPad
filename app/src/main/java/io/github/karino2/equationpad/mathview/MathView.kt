@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.graphics.Typeface
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
@@ -42,7 +43,7 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
 
     }
 
-    val textPaint = Paint(ANTI_ALIAS_FLAG).apply {
+    val textPaint = TextPaint(ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
         // typeface = Typeface.create("serif-monospace", Typeface.NORMAL)
         typeface = Typeface.create("serif", Typeface.NORMAL)
@@ -123,47 +124,13 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         // expr.box.width
 
         textPaint.apply { textSize = expr.box.height * boxToViewScale }
-        drawExpr(canvas, boxToViewScale, expr)
+        expr.draw(canvas, boxToViewScale, textPaint)
 
         selectedExpr?.let {
             canvas.drawRect(it.box.toRectF(boxToViewScale).apply{ offset(5f, 5f); bottom -= 10f; right -=10f }, selectionPaint)
         }
     }
 
-
-
-    fun drawExpr(canvas: Canvas, scale: Float, expr: Expr) {
-        when(expr) {
-            is Variable -> {
-                drawVariable(canvas, scale, expr)
-            }
-            is FuncExpr -> {
-                drawExpr(canvas, scale, expr.fname)
-                val _paint = textPaint.apply { textSize = expr.box.height * scale }
-
-                var fmi = _paint.fontMetrics
-                val y = expr.box.bottom*scale-fmi.bottom
-
-                canvas.drawText(
-                    "(",
-                    expr.fname.box.right*scale,
-                    y,
-                    _paint)
-                drawExpr(canvas, scale, expr.body)
-                canvas.drawText(
-                    ")",
-                    expr.body.box.right*scale,
-                    y,
-                    _paint)
-            }
-            is ExprGroup -> {
-                expr.children.forEach{drawExpr(canvas, scale, it)}
-            }
-            is Root -> {
-                expr.child?.let { drawExpr(canvas, scale, it) }
-            }
-        }
-    }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when(event.action) {
@@ -177,23 +144,4 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         }
         return super.onTouchEvent(event)
     }
-
-    private fun drawVariable(
-        canvas: Canvas,
-        scale: Float,
-        expr: Variable
-    ) {
-
-        val _paint = textPaint.apply { textSize = expr.box.height * scale }
-
-        var fmi = _paint.fontMetrics
-        val y = expr.box.bottom*scale-fmi.bottom
-
-        canvas.drawText(
-            expr.name,
-            expr.box.left*scale,
-             y,
-            _paint)
-    }
-
 }

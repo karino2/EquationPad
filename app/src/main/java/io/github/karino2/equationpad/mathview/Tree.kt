@@ -1,7 +1,8 @@
 package io.github.karino2.equationpad.mathview
 
-import android.graphics.Paint
+import android.graphics.Canvas
 import android.graphics.RectF
+import android.text.TextPaint
 import kotlin.IllegalArgumentException
 
 data class Box(var left:Float = 0f, var top:Float = 0f, var width:Float = 0f, var height:Float = 0f) {
@@ -57,6 +58,17 @@ sealed class Expr {
 
     abstract fun toLatex(builder: StringBuilder)
 
+
+    fun toLatex(): String {
+        val builder = StringBuilder()
+        toLatex(builder)
+        return builder.toString()
+    }
+
+    abstract fun draw(canvas: Canvas, scale: Float, paint: TextPaint)
+
+    // common utilities
+
     fun toLatexTerm(expr: Expr, builder: java.lang.StringBuilder) {
         when(expr) {
             is Variable -> expr.toLatex(builder)
@@ -68,10 +80,23 @@ sealed class Expr {
         }
     }
 
-    fun toLatex(): String {
-        val builder = StringBuilder()
-        toLatex(builder)
-        return builder.toString()
+    fun drawVariable(
+        canvas: Canvas,
+        scale: Float,
+        expr: Variable,
+        paint: TextPaint
+    ) {
+
+        val _paint = paint.apply { textSize = expr.box.height * scale }
+
+        var fmi = _paint.fontMetrics
+        val y = expr.box.bottom*scale-fmi.bottom
+
+        canvas.drawText(
+            expr.name,
+            expr.box.left*scale,
+            y,
+            _paint)
     }
 
 }
@@ -109,6 +134,10 @@ class Root(var child : Expr? = null) : Expr() {
         }
         throw IllegalArgumentException("No org expression in root.")
     }
+
+    override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
+        child?.let { it.draw(canvas, scale, paint) }
+    }
 }
 
 class Variable(val name: String) : Expr() {
@@ -121,6 +150,10 @@ class Variable(val name: String) : Expr() {
         box.top = top
         box.width = measure(name, currentSize)
         box.height = currentSize
+    }
+
+    override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
+        drawVariable(canvas, scale, this, paint)
     }
 }
 
@@ -153,6 +186,10 @@ abstract class ExprGroup : Expr() {
 
         }
         throw IllegalArgumentException("No org expression in this term.")
+    }
+
+    override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
+        children.forEach{it.draw(canvas, scale, paint)}
     }
 }
 
@@ -282,6 +319,29 @@ class FuncExpr(fname:Expr, body : Expr) : ExprGroup() {
         box.top = top
         box.width = fname.box.width+leftPar+body.box.width+rightPar
         box.height = Math.max(fname.box.height, body.box.height)
+    }
+
+    override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
+        fname.draw(canvas, scale, paint)
+        val _paint = paint.apply { textSize = box.height * scale }
+
+        var fmi = _paint.fontMetrics
+        val y = box.bottom*scale-fmi.bottom
+
+        canvas.drawText(
+            "(",
+            fname.box.right*scale,
+            y,
+            _paint)
+        body.draw(canvas, scale, _paint)
+        // draw might change _paint. Just recover size for a while.
+        _paint.textSize = box.height * scale
+
+        canvas.drawText(
+            ")",
+            body.box.right*scale,
+            y,
+            _paint)
     }
 
 }
