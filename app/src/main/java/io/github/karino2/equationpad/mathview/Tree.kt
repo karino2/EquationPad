@@ -73,7 +73,7 @@ sealed class Expr {
         when(expr) {
             is Variable -> expr.toLatex(builder)
             else -> {
-                builder.append("{")
+                builder.append("{ ")
                 expr.toLatex(builder)
                 builder.append("}")
             }

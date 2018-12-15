@@ -88,7 +88,7 @@ class ToLatexUnitTest {
     @Test
     fun subscript_nest() {
         val sub = Subscript(Subscript(Variable("x"), Variable("n")), Variable("y"))
-        assertEquals("{x_n}_y", sub.toLatex())
+        assertEquals("{ x_n}_y", sub.toLatex())
     }
 }
 
