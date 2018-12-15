@@ -59,7 +59,7 @@ class SubscriptUnitTest {
         sub.layout(0f, 0f, 1000f, {text, size -> text.length*size})
 
         assertEquals(1000f, sub.box.height)
-        assertEquals(4000f + 5 * (1000f / 3), sub.box.width)
+        assertEquals(4000f + 5 * (1000f / 2), sub.box.width)
     }
 }
 
