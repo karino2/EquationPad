@@ -29,9 +29,10 @@ class MainActivity : AppCompatActivity() {
                     et.setText("")
                     mathView.selectedExpr = newTerm
                 }
+                true
+            } else {
+                false
             }
-
-            true
         }
 
 
