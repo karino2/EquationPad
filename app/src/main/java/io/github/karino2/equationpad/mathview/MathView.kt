@@ -136,13 +136,8 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
             is Variable -> {
                 drawVariable(canvas, scale, expr)
             }
-            is Subscript -> {
-                drawExpr(canvas, scale, expr.body)
-                drawExpr(canvas, scale, expr.sub)
-            }
-            is Superscript -> {
-                drawExpr(canvas, scale, expr.body)
-                drawExpr(canvas, scale, expr.sup)
+            is ExprGroup -> {
+                expr.children.forEach{drawExpr(canvas, scale, it)}
             }
             is Root -> {
                 expr.child?.let { drawExpr(canvas, scale, it) }

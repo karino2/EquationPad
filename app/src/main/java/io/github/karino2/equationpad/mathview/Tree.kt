@@ -124,8 +124,60 @@ class Variable(val name: String) : Expr() {
     }
 }
 
-class Subscript(var body: Expr, var sub:Expr) : Expr(){
+abstract class ExprGroup : Expr() {
+    val children : MutableList<Expr> = mutableListOf()
+
+
+    override fun findHit(x: Float, y: Float): Expr? {
+        if(!box.isInside(x, y))
+            return null
+
+        for(child in children) {
+            child.findHit(x, y)?.let {
+                return it
+            }
+        }
+        return this
+    }
+
+    override fun replace(org: Expr, newExp: Expr) {
+        for((idx, child) in children.withIndex()) {
+            if(org == child)
+            {
+                parentNullIfSelf(org)
+                newExp.parent = this
+
+                children[idx] = newExp
+                return
+            }
+
+        }
+        throw IllegalArgumentException("No org expression in this term.")
+    }
+}
+
+class Subscript(body: Expr, sub:Expr) : ExprGroup(){
     val PADDING = 1f
+
+
+    init {
+        body.parent = this
+        sub.parent = this
+        children.add(body)
+        children.add(sub)
+    }
+
+    var body : Expr
+        get() = children[0]
+        set(value) {
+            children[0] = value
+        }
+
+    var sub :Expr
+        get() = children[1]
+        set(value) {
+            children[1] = value
+        }
 
     override fun toLatex(builder: StringBuilder) {
         toLatexTerm(body, builder)
@@ -144,52 +196,30 @@ class Subscript(var body: Expr, var sub:Expr) : Expr(){
         // may be need to add a little.
         box.height = body.box.height
    }
-
-    init {
-        body.parent = this
-        sub.parent = this
-    }
-
-    override fun replace(org: Expr, newExp: Expr) {
-        if(org == body)
-        {
-            parentNullIfSelf(org)
-            newExp.parent = this
-
-            body = newExp
-            return
-        }
-        if(org == sub)
-        {
-            parentNullIfSelf(org)
-            newExp.parent = this
-
-            sub = newExp
-            return
-        }
-        throw IllegalArgumentException("No org expression in this term.")
-    }
-
-    override fun findHit(x: Float, y: Float): Expr? {
-        if(!box.isInside(x, y))
-            return null
-
-        body.findHit(x, y)?.let {
-            return it
-        }
-
-        sub.findHit(x, y)?.let {
-            return it
-        }
-        return this
-    }
-
 }
 
 
 
-class Superscript(var body: Expr, var sup:Expr) : Expr(){
+class Superscript(body: Expr, sup:Expr) : ExprGroup(){
     val PADDING = 1f
+    init {
+        body.parent = this
+        sup.parent = this
+        children.add(body)
+        children.add(sup)
+    }
+    var body : Expr
+        get() = children[0]
+        set(value) {
+            children[0] = value
+        }
+
+    var sup :Expr
+        get() = children[1]
+        set(value) {
+            children[1] = value
+        }
+
 
     override fun toLatex(builder: StringBuilder) {
         toLatexTerm(body, builder)
@@ -199,7 +229,7 @@ class Superscript(var body: Expr, var sup:Expr) : Expr(){
 
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
         // determine sizze.
-        sup.layout(0f, 0f, currentSize/2f, measure)
+        sup.layout(0f, top, currentSize/2f, measure)
 
 
         body.layout(left, top+sup.box.height/5f, currentSize, measure)
@@ -211,44 +241,4 @@ class Superscript(var body: Expr, var sup:Expr) : Expr(){
         // may be need to add a little.
         box.height = body.box.bottom - sup.box.top
     }
-
-    init {
-        body.parent = this
-        sup.parent = this
-    }
-
-    override fun replace(org: Expr, newExp: Expr) {
-        if(org == body)
-        {
-            parentNullIfSelf(org)
-            newExp.parent = this
-
-            body = newExp
-            return
-        }
-        if(org == sup)
-        {
-            parentNullIfSelf(org)
-            newExp.parent = this
-
-            sup = newExp
-            return
-        }
-        throw IllegalArgumentException("No org expression in this term.")
-    }
-
-    override fun findHit(x: Float, y: Float): Expr? {
-        if(!box.isInside(x, y))
-            return null
-
-        body.findHit(x, y)?.let {
-            return it
-        }
-
-        sup.findHit(x, y)?.let {
-            return it
-        }
-        return this
-    }
-
 }
