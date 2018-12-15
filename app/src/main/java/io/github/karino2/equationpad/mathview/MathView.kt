@@ -44,7 +44,8 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
 
     val textPaint = Paint(ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
-        typeface = Typeface.create("serif-monospace", Typeface.NORMAL)
+        // typeface = Typeface.create("serif-monospace", Typeface.NORMAL)
+        typeface = Typeface.create("serif", Typeface.NORMAL)
     }
 
     val selectionPaint = Paint(ANTI_ALIAS_FLAG).apply {
@@ -135,6 +136,25 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
         when(expr) {
             is Variable -> {
                 drawVariable(canvas, scale, expr)
+            }
+            is FuncExpr -> {
+                drawExpr(canvas, scale, expr.fname)
+                val _paint = textPaint.apply { textSize = expr.box.height * scale }
+
+                var fmi = _paint.fontMetrics
+                val y = expr.box.bottom*scale-fmi.bottom
+
+                canvas.drawText(
+                    "(",
+                    expr.fname.box.right*scale,
+                    y,
+                    _paint)
+                drawExpr(canvas, scale, expr.body)
+                canvas.drawText(
+                    ")",
+                    expr.body.box.right*scale,
+                    y,
+                    _paint)
             }
             is ExprGroup -> {
                 expr.children.forEach{drawExpr(canvas, scale, it)}

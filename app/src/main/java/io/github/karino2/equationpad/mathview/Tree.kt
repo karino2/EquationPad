@@ -242,3 +242,46 @@ class Superscript(body: Expr, sup:Expr) : ExprGroup(){
         box.height = body.box.bottom - sup.box.top
     }
 }
+
+class FuncExpr(fname:Expr, body : Expr) : ExprGroup() {
+    override fun toLatex(builder: StringBuilder) {
+        fname.toLatex(builder)
+        builder.append("(")
+        body.toLatex(builder)
+        builder.append(")")
+    }
+
+    init {
+        fname.parent = this
+        body.parent = this
+        children.add(fname)
+        children.add(body)
+    }
+
+    var fname : Expr
+        get() = children[0]
+        set(value) {
+            children[0] = value
+        }
+
+
+    var body : Expr
+        get() = children[1]
+        set(value) {
+            children[1] = value
+        }
+
+    override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
+        val leftPar = measure("(", currentSize)
+        val rightPar = measure(")", currentSize)
+
+        fname.layout(left, top, currentSize, measure)
+        body.layout(fname.box.right+leftPar, top, currentSize, measure)
+
+        box.left = left
+        box.top = top
+        box.width = fname.box.width+leftPar+body.box.width+rightPar
+        box.height = Math.max(fname.box.height, body.box.height)
+    }
+
+}
