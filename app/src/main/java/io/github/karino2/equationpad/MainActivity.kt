@@ -8,9 +8,7 @@ import android.view.KeyEvent
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import io.github.karino2.equationpad.mathview.MathView
-import io.github.karino2.equationpad.mathview.Subscript
-import io.github.karino2.equationpad.mathview.Variable
+import io.github.karino2.equationpad.mathview.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,11 +36,18 @@ class MainActivity : AppCompatActivity() {
 
 
         findViewById<Button>(R.id.buttonSubscript).setOnClickListener {
-            mathView.ifSelected { selected ->
-                val pare = selected.parent!!
-                val newTerm = Subscript(selected, Variable("n"))
-                pare.replace(selected, newTerm)
+            replaceWith {old->
+                val newTerm = Subscript(old, Variable("n"))
                 mathView.selectedExpr = newTerm.sub
+                newTerm
+            }
+        }
+
+        findViewById<Button>(R.id.buttonSuperscript).setOnClickListener {
+            replaceWith {old->
+                val newTerm = Superscript(old, Variable("n"))
+                mathView.selectedExpr = newTerm.sup
+                newTerm
             }
         }
 
@@ -50,6 +55,15 @@ class MainActivity : AppCompatActivity() {
             copyToClipboard("\$\$${mathView.expr.toLatex()}\$\$")
         }
     }
+
+    fun replaceWith(factory: (Expr)-> Expr) {
+        mathView.ifSelected { selected ->
+            val pare = selected.parent!!
+            val newTerm = factory(selected)
+            pare.replace(selected, newTerm)
+        }
+    }
+
 
     fun showMessage(msg : String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 

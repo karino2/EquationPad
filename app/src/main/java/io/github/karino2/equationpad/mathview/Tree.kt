@@ -185,3 +185,70 @@ class Subscript(var body: Expr, var sub:Expr) : Expr(){
     }
 
 }
+
+
+
+class Superscript(var body: Expr, var sup:Expr) : Expr(){
+    val PADDING = 1f
+
+    override fun toLatex(builder: StringBuilder) {
+        toLatexTerm(body, builder)
+        builder.append("^")
+        toLatexTerm(sup, builder)
+    }
+
+    override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
+        // determine sizze.
+        sup.layout(0f, 0f, currentSize/2f, measure)
+
+
+        body.layout(left, top+sup.box.height/5f, currentSize, measure)
+        sup.box.left = body.box.right+PADDING
+
+        box.left = left
+        box.top = top
+        box.width = body.box.width + sup.box.width
+        // may be need to add a little.
+        box.height = body.box.bottom - sup.box.top
+    }
+
+    init {
+        body.parent = this
+        sup.parent = this
+    }
+
+    override fun replace(org: Expr, newExp: Expr) {
+        if(org == body)
+        {
+            parentNullIfSelf(org)
+            newExp.parent = this
+
+            body = newExp
+            return
+        }
+        if(org == sup)
+        {
+            parentNullIfSelf(org)
+            newExp.parent = this
+
+            sup = newExp
+            return
+        }
+        throw IllegalArgumentException("No org expression in this term.")
+    }
+
+    override fun findHit(x: Float, y: Float): Expr? {
+        if(!box.isInside(x, y))
+            return null
+
+        body.findHit(x, y)?.let {
+            return it
+        }
+
+        sup.findHit(x, y)?.let {
+            return it
+        }
+        return this
+    }
+
+}

@@ -140,6 +140,10 @@ class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet)
                 drawExpr(canvas, scale, expr.body)
                 drawExpr(canvas, scale, expr.sub)
             }
+            is Superscript -> {
+                drawExpr(canvas, scale, expr.body)
+                drawExpr(canvas, scale, expr.sup)
+            }
             is Root -> {
                 expr.child?.let { drawExpr(canvas, scale, it) }
             }
