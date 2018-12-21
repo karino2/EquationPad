@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
 class MathView(context :Context, attrSet: AttributeSet) : View(context, attrSet) {
 
     val expr = Root(Variable("x"))
-    var selectedExpr : Expr? = null
+    var selectedExpr : Expr? = expr.child
         set(value) {
             field = value
             requestLayout()
