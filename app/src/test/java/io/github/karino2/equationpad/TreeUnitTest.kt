@@ -64,21 +64,7 @@ class SubscriptUnitTest {
 }
 
 
-class VariableUnitTest {
-    @Test
-    fun basic_nameCorrect() {
-        val vari = Variable("x")
-        assertEquals("x", vari.name)
-    }
-}
-
 class ToLatexUnitTest {
-    @Test
-    fun most_basic() {
-        val vari = Variable("x")
-        assertEquals("x", vari.toLatex())
-    }
-
     @Test
     fun subscript_basic() {
         val sub = Subscript(Variable("x"), Variable("n"))

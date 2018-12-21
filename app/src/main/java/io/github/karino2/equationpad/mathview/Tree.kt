@@ -80,25 +80,6 @@ sealed class Expr {
         }
     }
 
-    fun drawVariable(
-        canvas: Canvas,
-        scale: Float,
-        expr: Variable,
-        paint: TextPaint
-    ) {
-
-        val _paint = paint.apply { textSize = expr.box.height * scale }
-
-        var fmi = _paint.fontMetrics
-        val y = expr.box.bottom*scale-fmi.bottom
-
-        canvas.drawText(
-            expr.name,
-            expr.box.left*scale,
-            y,
-            _paint)
-    }
-
 }
 
 class Root(var child : Expr? = null) : Expr() {
@@ -141,6 +122,7 @@ class Root(var child : Expr? = null) : Expr() {
 }
 
 class Variable(val name: String) : Expr() {
+
     override fun toLatex(builder: StringBuilder) {
         builder.append(name)
     }
@@ -148,12 +130,43 @@ class Variable(val name: String) : Expr() {
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float)->Float) {
         box.left = left
         box.top = top
-        box.width = measure(name, currentSize)
+        box.width = measure(resolved, currentSize)
         box.height = currentSize
     }
 
+    val entityMap = mapOf("lambda" to "λ",
+        "alpha" to "α",
+        "beta" to "β")
+
+    val resolved: String
+    get() {
+        val tokens = name.split(" ")
+        val builder = StringBuilder()
+        tokens.forEach { token->
+            if(token.startsWith('\\')) {
+                val ref = token.substring(1)
+                if(entityMap.containsKey(ref)) {
+                    builder.append(entityMap[ref])
+                }
+                else {
+                    builder.append(token)
+                }
+            } else {
+                builder.append(token)
+            }
+        }
+        return builder.toString()
+    }
+
     override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
-        drawVariable(canvas, scale, this, paint)
+        val _paint = paint.apply { textSize = box.height * scale }
+        var fmi = _paint.fontMetrics
+        val y = box.bottom* scale -fmi.bottom
+        canvas.drawText(
+            this.resolved,
+            box.left* scale,
+            y,
+            _paint)
     }
 }
 
