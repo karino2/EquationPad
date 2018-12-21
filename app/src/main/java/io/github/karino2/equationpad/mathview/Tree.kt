@@ -136,7 +136,10 @@ class Variable(val name: String) : Expr() {
 
     val entityMap = mapOf("lambda" to "λ",
         "alpha" to "α",
-        "beta" to "β")
+        "beta" to "β",
+        "delta" to "δ",
+        "psi" to "ψ",
+        "Psi" to "Ψ")
 
     val resolved: String
     get() {
