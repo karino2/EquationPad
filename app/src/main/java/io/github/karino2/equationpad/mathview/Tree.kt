@@ -56,7 +56,10 @@ sealed class Expr {
         return null
     }
 
-    abstract fun toLatex(builder: StringBuilder)
+    // do nothing for default behavior.
+    open fun switch() {}
+
+   abstract fun toLatex(builder: StringBuilder)
 
 
     fun toLatex(): String {
@@ -209,7 +212,15 @@ abstract class ExprGroup : Expr() {
     }
 }
 
-class Subscript(body: Expr, sub:Expr) : ExprGroup(){
+abstract class TwoExpr : ExprGroup() {
+    override fun switch() {
+        val (child0, child1) = Pair(children[0], children[1])
+        children[0] = child1
+        children[1] = child0
+    }
+}
+
+class Subscript(body: Expr, sub:Expr) : TwoExpr(){
     val PADDING = 1f
 
 
@@ -253,7 +264,7 @@ class Subscript(body: Expr, sub:Expr) : ExprGroup(){
 
 
 
-class Superscript(body: Expr, sup:Expr) : ExprGroup(){
+class Superscript(body: Expr, sup:Expr) : TwoExpr(){
     val PADDING = 1f
     init {
         body.parent = this
@@ -296,7 +307,7 @@ class Superscript(body: Expr, sup:Expr) : ExprGroup(){
     }
 }
 
-class FuncExpr(fname:Expr, body : Expr) : ExprGroup() {
+class FuncExpr(fname:Expr, body : Expr) : TwoExpr() {
     override fun toLatex(builder: StringBuilder) {
         fname.toLatex(builder)
         builder.append("(")

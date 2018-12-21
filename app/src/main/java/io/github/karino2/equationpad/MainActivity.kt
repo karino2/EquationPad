@@ -64,6 +64,14 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.buttonCopyLatex).setOnClickListener {
             copyToClipboard("\$\$${mathView.expr.toLatex()}\$\$")
         }
+
+        findViewById<Button>(R.id.buttonSwitch).setOnClickListener {
+            mathView.selectedExpr?.let {
+                it.switch()
+                mathView.requestLayout()
+            }
+        }
+
     }
 
     fun replaceWith(factory: (Expr)-> Expr) {
