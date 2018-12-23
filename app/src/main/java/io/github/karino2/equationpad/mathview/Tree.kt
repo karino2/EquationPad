@@ -427,3 +427,12 @@ class Products(a: Expr, b:Expr) : ExprGroup() {
         addChild(b)
     }
 }
+
+object ExprBuilder {
+    fun v(name: String) = Variable(name)
+    fun pro(a: Expr, b:Expr) = Products(a, b)
+    fun sub(a: Expr, b:Expr) = Subscript(a, b)
+}
+
+fun build(body: ExprBuilder.()->Expr) = ExprBuilder.body()
+

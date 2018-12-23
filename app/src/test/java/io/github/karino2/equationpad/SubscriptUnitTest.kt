@@ -2,6 +2,7 @@ package io.github.karino2.equationpad
 
 import io.github.karino2.equationpad.mathview.Subscript
 import io.github.karino2.equationpad.mathview.Variable
+import io.github.karino2.equationpad.mathview.build
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -51,11 +52,7 @@ class SubscriptUnitTest {
 
     @Test
     fun layout_basicCorrect() {
-
-        val body = Variable("body")
-        val child = Variable("child")
-
-        val sub = Subscript(body, child)
+        val sub = build {sub(v("body"), v("child"))}
         sub.layout(0f, 0f, 1000f, {text, size -> text.length*size})
 
         assertEquals(1000f, sub.box.height)
