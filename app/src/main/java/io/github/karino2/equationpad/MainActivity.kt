@@ -26,17 +26,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val spinner = findViewById<Spinner>(R.id.spinnerEntity)
-        /*
-        val adapter = object : ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, Variable.entityMap.toList()) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = (convertView ?:layoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false)) as TextView
-
-                val item = getItem(position)
-                view.text = item.second
-
-                return view
-            }
-        }*/
         val adapter = ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, listOf(Pair("none", "")) + Variable.entityMap.toList())
 
         spinner.adapter = adapter
@@ -45,7 +34,9 @@ class MainActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val item = adapter.getItem(position)
                 if(item.second != "") {
-                    editText.setText("\\${item.first}")
+                    mathView.ifSelected {
+                        replaceWithVar("\\${item.first}", it)
+                    }
                 }
             }
 
@@ -56,10 +47,9 @@ class MainActivity : AppCompatActivity() {
         editText.setOnKeyListener { v, keyCode, event ->
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 mathView.ifSelected { expr->
-                    val newTerm = Variable(editText.text.toString())
-                    expr.parent?.replace(expr, newTerm)
+                    val name = editText.text.toString()
                     editText.setText("")
-                    mathView.selectedExpr = newTerm
+                    replaceWithVar(name, expr)
                 }
                 true
             } else {
@@ -133,6 +123,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun replaceWithVar(name: String, selected: Expr) {
+        val newTerm = Variable(name)
+        selected.parent?.replace(selected, newTerm)
+        mathView.selectedExpr = newTerm
     }
 
     fun replaceWith(factory: (Expr)-> Expr) {
