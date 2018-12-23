@@ -22,7 +22,7 @@
             android:id="@+id/editText"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
+            android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/buttonWiden"
     />
     <Button
             android:text="_"
@@ -44,13 +44,22 @@
             android:id="@+id/buttonSuperscript" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
             app:layout_constraintStart_toEndOf="@+id/buttonSubscript" android:layout_marginStart="8dp"/>
+
+    <Button
+            android:text="*"
+            android:layout_width="54dp"
+            android:layout_height="48dp"
+            android:id="@+id/buttonProducts" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/mathView"
+            app:layout_constraintStart_toEndOf="@+id/buttonSuperscript" android:layout_marginStart="8dp"/>
+
     <Button
             android:text="f(x)"
             android:layout_width="54dp"
             android:layout_height="48dp"
             android:id="@+id/buttonFunction" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
-            app:layout_constraintStart_toEndOf="@+id/buttonSuperscript" android:layout_marginStart="8dp"/>
+            app:layout_constraintStart_toEndOf="@+id/buttonProducts" android:layout_marginStart="8dp"/>
     <Button
             android:text="sw"
             android:layout_width="54dp"
@@ -58,5 +67,14 @@
             android:id="@+id/buttonSwitch" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
             app:layout_constraintStart_toEndOf="@+id/buttonFunction" android:layout_marginStart="8dp"/>
+
+    <Button
+            android:text="w"
+            android:layout_width="54dp"
+            android:layout_height="48dp"
+            android:id="@+id/buttonWiden" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

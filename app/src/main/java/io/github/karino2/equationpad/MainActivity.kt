@@ -72,6 +72,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.buttonProducts).setOnClickListener {
+            mathView.selectedExpr?.let {
+                when(it) {
+                    is Products -> {
+                        it.children.add(Variable("x"))
+
+                    }
+                    else -> {
+                        replaceWith {oldExpr ->
+                            Products(oldExpr, Variable("x"))
+                        }
+                    }
+                }
+                mathView.requestLayout()
+            }
+        }
+
+        findViewById<Button>(R.id.buttonWiden).setOnClickListener {
+            mathView.ifSelected { oldExpr->
+                when(oldExpr) {
+                    is Root -> {}
+                    else -> mathView.selectedExpr = oldExpr.parent!!
+                }
+            }
+        }
+
     }
 
     fun replaceWith(factory: (Expr)-> Expr) {

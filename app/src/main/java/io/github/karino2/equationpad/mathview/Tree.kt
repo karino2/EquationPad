@@ -17,7 +17,11 @@ data class Box(var left:Float = 0f, var top:Float = 0f, var width:Float = 0f, va
     fun isInside(x: Float, y:Float) = (x >= left && x <= right && y >= top && y <= bottom)
 }
 
-
+inline fun StringBuilder.enclose(beg: String, end: String, body: (StringBuilder)->Unit) {
+    this.append(beg)
+    body(this)
+    this.append(end)
+}
 
 
 sealed class Expr {
@@ -76,14 +80,18 @@ sealed class Expr {
         when(expr) {
             is Variable -> expr.toLatex(builder)
             else -> {
-                builder.append("{ ")
-                expr.toLatex(builder)
-                builder.append("}")
+                builder.enclose("{ ", "}") {
+                    expr.toLatex(it)
+
+                }
             }
         }
     }
 
 }
+
+
+
 
 class Root(var child : Expr? = null) : Expr() {
     override fun toLatex(builder: StringBuilder) {
@@ -141,6 +149,7 @@ class Variable(val name: String) : Expr() {
         "alpha" to "α",
         "beta" to "β",
         "delta" to "δ",
+        "theta" to "θ",
         "psi" to "ψ",
         "Psi" to "Ψ")
 
@@ -371,4 +380,47 @@ class FuncExpr(fname:Expr, body : Expr) : TwoExpr() {
             _paint)
     }
 
+}
+
+
+/*
+fun Expr.toLatexTerm(builder: StringBuilder, withBrace: Boolean) {
+    if(withBrace) {
+        builder.enclose("{", "}") {
+            this.toLatex(it)
+        }
+    } else {
+        this.toLatex(builder)
+    }
+}
+*/
+
+class Products(a: Expr, b:Expr) : ExprGroup() {
+    override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
+        children[0].layout(left, top, currentSize, measure)
+        children.windowed(2).forEach {tup -> tup[1].layout(tup[0].box.right, top, currentSize, measure)}
+
+        box.left = left
+        box.top = top
+        box.width = children.last().box.right - left
+        box.height = children.maxBy{it.box.height}!!.box.height
+    }
+
+    override fun toLatex(builder: StringBuilder) {
+        builder.enclose("{ ", "}") {
+            for(child in children) {
+                toLatexTerm(child, it)
+                it.append(" ")
+            }
+        }
+
+    }
+
+    init {
+        a.parent = this
+        b.parent = this
+
+        children.add(a)
+        children.add(b)
+    }
 }
