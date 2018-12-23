@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.buttonFunction).setOnClickListener {
             replaceWith {old->
-                val newTerm = FuncExpr(Variable("f"), old)
+                val newTerm = FuncExpr(old, Variable("x"))
                 mathView.selectedExpr = newTerm.fname
                 newTerm
             }
