@@ -145,13 +145,17 @@ class Variable(val name: String) : Expr() {
         box.height = currentSize
     }
 
-    val entityMap = mapOf("lambda" to "λ",
-        "alpha" to "α",
-        "beta" to "β",
-        "delta" to "δ",
-        "theta" to "θ",
-        "psi" to "ψ",
-        "Psi" to "Ψ")
+    companion object {
+        val entityMap = mapOf("lambda" to "λ",
+            "alpha" to "α",
+            "beta" to "β",
+            "gamma" to "γ",
+            "delta" to "δ",
+            "theta" to "θ",
+            "psi" to "ψ",
+            "Psi" to "Ψ")
+    }
+
 
     val resolved: String
     get() {

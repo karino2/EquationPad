@@ -5,9 +5,9 @@ import android.content.ClipboardManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.KeyEvent
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
 import io.github.karino2.equationpad.mathview.*
 
 class MainActivity : AppCompatActivity() {
@@ -16,17 +16,49 @@ class MainActivity : AppCompatActivity() {
         findViewById<MathView>(R.id.mathView)
     }
 
+    val editText by lazy {
+        findViewById<EditText>(R.id.editText)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val et = findViewById<EditText>(R.id.editText)
-        et.setOnKeyListener { v, keyCode, event ->
+        val spinner = findViewById<Spinner>(R.id.spinnerEntity)
+        /*
+        val adapter = object : ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, Variable.entityMap.toList()) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = (convertView ?:layoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false)) as TextView
+
+                val item = getItem(position)
+                view.text = item.second
+
+                return view
+            }
+        }*/
+        val adapter = ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, listOf(Pair("none", "")) + Variable.entityMap.toList())
+
+        spinner.adapter = adapter
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val item = adapter.getItem(position)
+                if(item.second != "") {
+                    editText.setText("\\${item.first}")
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+        }
+
+        editText.setOnKeyListener { v, keyCode, event ->
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 mathView.ifSelected { expr->
-                    val newTerm = Variable(et.text.toString())
+                    val newTerm = Variable(editText.text.toString())
                     expr.parent?.replace(expr, newTerm)
-                    et.setText("")
+                    editText.setText("")
                     mathView.selectedExpr = newTerm
                 }
                 true
