@@ -76,12 +76,15 @@ class MainActivity : AppCompatActivity() {
             mathView.selectedExpr?.let {
                 when(it) {
                     is Products -> {
-                        it.children.add(Variable("x"))
-
+                        val newNode = Variable("x")
+                        it.addChild(newNode)
+                        mathView.selectedExpr = newNode
                     }
                     else -> {
                         replaceWith {oldExpr ->
-                            Products(oldExpr, Variable("x"))
+                            val newTerm = Products(oldExpr, Variable("x"))
+                            mathView.selectedExpr = newTerm.children[1]
+                            newTerm
                         }
                     }
                 }

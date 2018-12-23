@@ -396,6 +396,12 @@ fun Expr.toLatexTerm(builder: StringBuilder, withBrace: Boolean) {
 */
 
 class Products(a: Expr, b:Expr) : ExprGroup() {
+
+    fun addChild(child: Expr) {
+        child.parent = this
+        children.add(child)
+    }
+
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
         children[0].layout(left, top, currentSize, measure)
         children.windowed(2).forEach {tup -> tup[1].layout(tup[0].box.right, top, currentSize, measure)}
@@ -417,10 +423,7 @@ class Products(a: Expr, b:Expr) : ExprGroup() {
     }
 
     init {
-        a.parent = this
-        b.parent = this
-
-        children.add(a)
-        children.add(b)
+        addChild(a)
+        addChild(b)
     }
 }
