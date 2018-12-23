@@ -1,6 +1,7 @@
 package io.github.karino2.equationpad.mathview
 
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.RectF
 import android.text.TextPaint
 import kotlin.IllegalArgumentException
@@ -87,6 +88,16 @@ sealed class Expr {
             }
         }
     }
+
+    protected fun textBase(scale: Float, paint: TextPaint): Float {
+        val fmi = paint.fontMetrics
+        return box.bottom * scale - fmi.bottom
+    }
+
+    protected fun TextPaint.applyTextSize(scale: Float) : TextPaint {
+        return this.apply { textSize = 0.95F*box.height * scale }
+    }
+
 
 }
 
@@ -178,15 +189,15 @@ class Variable(val name: String) : Expr() {
     }
 
     override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
-        val _paint = paint.apply { textSize = box.height * scale }
-        var fmi = _paint.fontMetrics
-        val y = box.bottom* scale -fmi.bottom
+        val _paint = paint.applyTextSize(scale)
+        val y = textBase(scale, _paint)
         canvas.drawText(
             this.resolved,
             box.left* scale,
             y,
             _paint)
     }
+
 }
 
 abstract class ExprGroup : Expr() {
@@ -363,10 +374,9 @@ class FuncExpr(fname:Expr, body : Expr) : TwoExpr() {
 
     override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
         fname.draw(canvas, scale, paint)
-        val _paint = paint.apply { textSize = box.height * scale }
+        val _paint = paint.applyTextSize(scale)
 
-        var fmi = _paint.fontMetrics
-        val y = box.bottom*scale-fmi.bottom
+        val y = textBase(scale, _paint)
 
         canvas.drawText(
             "(",
