@@ -60,16 +60,16 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.buttonSubscript).setOnClickListener {
             replaceWith {old->
-                val newTerm = Subscript(old, Variable("n"))
-                mathView.selectedExpr = newTerm.sub
+                val (newTerm, selectTarget) = addSubscript(old)
+                mathView.selectedExpr = selectTarget
                 newTerm
             }
         }
 
         findViewById<Button>(R.id.buttonSuperscript).setOnClickListener {
             replaceWith {old->
-                val newTerm = Superscript(old, Variable("n"))
-                mathView.selectedExpr = newTerm.sup
+                val (newTerm, selectTarget) = addSuperscript(old)
+                mathView.selectedExpr = selectTarget
                 newTerm
             }
         }
@@ -77,7 +77,22 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.buttonFunction).setOnClickListener {
             replaceWith {old->
                 val newTerm = FuncExpr(old, Variable("x"))
-                mathView.selectedExpr = newTerm.fname
+                mathView.selectedExpr = newTerm.body
+                newTerm
+            }
+        }
+
+        findViewById<Button>(R.id.buttonSum).setOnClickListener {
+            replaceWith {old->
+                val newTerm = SumExpr(old)
+                mathView.selectedExpr = newTerm
+                newTerm
+            }
+        }
+        findViewById<Button>(R.id.buttonProd).setOnClickListener {
+            replaceWith {old->
+                val newTerm = ProdExpr(old)
+                mathView.selectedExpr = newTerm
                 newTerm
             }
         }
@@ -120,6 +135,37 @@ class MainActivity : AppCompatActivity() {
                     is Root -> {}
                     else -> mathView.selectedExpr = oldExpr.parent!!
                 }
+            }
+        }
+
+    }
+
+    private fun addSuperscript(old: Expr): Pair<Expr, Expr> {
+        return when(old) {
+            is MathOpExpr-> {
+                val selectTarget = Variable("n")
+                old.superScript = selectTarget
+                Pair(old, selectTarget)
+            }
+            else -> {
+                val newTerm = Superscript(old, Variable("n"))
+                val selectTarget = newTerm.sup
+                Pair(newTerm, selectTarget)
+            }
+        }
+    }
+
+    private fun addSubscript(old: Expr): Pair<Expr, Expr> {
+        return when(old) {
+            is MathOpExpr -> {
+                val target = Variable("n")
+                old.subScript = target
+                Pair(old, target)
+            }
+            else -> {
+                val newTerm = Subscript(old, Variable("n"))
+                Pair(newTerm, newTerm.sub)
+
             }
         }
 

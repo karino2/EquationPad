@@ -18,7 +18,7 @@ class VariableUnitTest {
         Assert.assertEquals("x", vari.resolved)
     }
 
-    // space should be supported officially in multiply (so that subscript, etc should work).
+    // space should be supported officially in multiply (so that subScript, etc should work).
     // but add test for behavior document purpose.
     @Test
     fun resolve_spaceRemoved() {

@@ -1,7 +1,6 @@
 package io.github.karino2.equationpad.mathview
 
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.RectF
 import android.text.TextPaint
 import kotlin.IllegalArgumentException
@@ -157,13 +156,25 @@ class Variable(val name: String) : Expr() {
     }
 
     companion object {
-        val entityMap = mapOf("lambda" to "λ",
+        val entityMap = mapOf(
             "alpha" to "α",
             "beta" to "β",
             "gamma" to "γ",
             "delta" to "δ",
+            "epsilon" to "ε",
+            "eta" to "η",
             "theta" to "θ",
+            "lambda" to "λ",
+            "mu" to "μ",
+            "xi" to "ξ",
+            "pi" to "π",
+            "ro" to "ρ",
+            "sigma" to "σ",
+            "tau" to "τ",
+            "phi" to "φ",
+            "chi" to "χ",
             "psi" to "ψ",
+            "omega" to "ω",
             "Psi" to "Ψ")
     }
 
@@ -234,6 +245,11 @@ abstract class ExprGroup : Expr() {
     override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
         children.forEach{it.draw(canvas, scale, paint)}
     }
+
+    fun addChild(child: Expr) {
+        child.parent = this
+        children.add(child)
+    }
 }
 
 abstract class TwoExpr : ExprGroup() {
@@ -249,10 +265,8 @@ class Subscript(body: Expr, sub:Expr) : TwoExpr(){
 
 
     init {
-        body.parent = this
-        sub.parent = this
-        children.add(body)
-        children.add(sub)
+        addChild(body)
+        addChild(sub)
     }
 
     var body : Expr
@@ -291,10 +305,8 @@ class Subscript(body: Expr, sub:Expr) : TwoExpr(){
 class Superscript(body: Expr, sup:Expr) : TwoExpr(){
     val PADDING = 1f
     init {
-        body.parent = this
-        sup.parent = this
-        children.add(body)
-        children.add(sup)
+        addChild(body)
+        addChild(sup)
     }
     var body : Expr
         get() = children[0]
@@ -340,10 +352,8 @@ class FuncExpr(fname:Expr, body : Expr) : TwoExpr() {
     }
 
     init {
-        fname.parent = this
-        body.parent = this
-        children.add(fname)
-        children.add(body)
+        addChild(fname)
+        addChild(body)
     }
 
     var fname : Expr
@@ -385,7 +395,7 @@ class FuncExpr(fname:Expr, body : Expr) : TwoExpr() {
             _paint)
         body.draw(canvas, scale, _paint)
         // draw might change _paint. Just recover size for a while.
-        _paint.textSize = box.height * scale
+        _paint.applyTextSize(scale)
 
         canvas.drawText(
             ")",
@@ -410,11 +420,6 @@ fun Expr.toLatexTerm(builder: StringBuilder, withBrace: Boolean) {
 */
 
 class Products(a: Expr, b:Expr) : ExprGroup() {
-
-    fun addChild(child: Expr) {
-        child.parent = this
-        children.add(child)
-    }
 
     override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
         children[0].layout(left, top, currentSize, measure)
@@ -442,10 +447,171 @@ class Products(a: Expr, b:Expr) : ExprGroup() {
     }
 }
 
+// base class of sum and prod.
+
+abstract class MathOpExpr(val name: Variable, body: Expr) : ExprGroup() {
+    init {
+        addChild(name)
+        addChild(body)
+    }
+
+
+
+    val body: Expr
+        get() = children[1]
+
+    var subScript: Expr? = null
+        set(value) {
+            field?.let { parentNullIfSelf(it) }
+
+            value?.parent = this
+            field = value
+        }
+
+    var superScript: Expr? = null
+        set(value) {
+            field?.let { parentNullIfSelf(it) }
+
+            value?.parent = this
+            field = value
+        }
+
+    override fun findHit(x: Float, y: Float): Expr? {
+        subScript?.let {
+            it.findHit(x, y)?.let { hit ->
+                return hit
+            }
+        }
+        superScript?.let {
+            it.findHit(x, y)?.let { hit ->
+                return hit
+            }
+        }
+        val cand = super.findHit(x, y)
+        if(cand == name)
+            return this
+        return cand
+    }
+
+    override fun replace(org: Expr, newExp: Expr) {
+        when (org) {
+            subScript -> subScript = newExp
+            superScript -> superScript = newExp
+            else -> super.replace(org, newExp)
+        }
+    }
+
+
+    override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
+        val (bodySize, headTailSize) = when {
+            subScript != null && superScript != null -> Pair(currentSize/2.0F, currentSize/4.0F)
+            subScript != null || superScript != null -> Pair(currentSize*2.0F/3.0F, currentSize/3.0F)
+            else -> Pair(currentSize, 0F)
+        }
+        val bodyTop = headTailSize + top
+        name.layout(left, bodyTop, bodySize, measure)
+        body.layout(name.box.right, bodyTop, bodySize, measure)
+
+        superScript?.let {
+            // layout twice to know centering position.
+            it.layout(left, top, headTailSize, measure)
+            val width = it.box.width
+
+            val supleft = calcCenteringLeft(left, width)
+            it.layout(supleft, top, headTailSize, measure)
+        }
+
+        subScript?.let {
+            it.layout(left, name.box.bottom, headTailSize, measure)
+            val width = it.box.width
+
+            val subleft = calcCenteringLeft(left, width)
+            it.layout(subleft, name.box.bottom, headTailSize, measure)
+        }
+        box.left = left
+        box.top = top
+        box.width = name.box.width+body.box.width
+
+        val bottomOffset = subScript?.box?.height ?: 0F
+        box.height = body.box.bottom - top + bottomOffset
+    }
+
+    private fun calcCenteringLeft(left: Float, width: Float): Float {
+        return Math.max(left, left + name.box.width / 2.0F - width / 2.0F)
+    }
+
+    override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
+        // TODO: name should be roman.
+        name.draw(canvas, scale, paint)
+        body.draw(canvas, scale, paint)
+        subScript?.let {
+            it.draw(canvas, scale, paint)
+        }
+        superScript?.let {
+            it.draw(canvas, scale, paint)
+        }
+
+
+    }
+
+    abstract fun toLatexBase(builder: StringBuilder) : Unit
+
+    override fun toLatex(builder: StringBuilder) {
+        toLatexBase(builder)
+        superScript?.let {
+            builder.append("^")
+            toLatexTerm(it, builder)
+        }
+        subScript?.let {
+            builder.append("_")
+            toLatexTerm(it, builder)
+        }
+        builder.enclose("{ ", "}") {
+            body.toLatex(it)
+        }
+    }
+}
+
+
+ class SumExpr(body: Expr) : MathOpExpr(Variable("Σ"), body){
+     override fun toLatexBase(builder: StringBuilder) {
+         builder.append("\\sum")
+     }
+
+ }
+
+class ProdExpr(body: Expr) : MathOpExpr(Variable("Π"), body){
+    override fun toLatexBase(builder: StringBuilder) {
+        builder.append("\\prod")
+    }
+}
+
+
+
 object ExprBuilder {
     fun v(name: String) = Variable(name)
     fun pro(a: Expr, b:Expr) = Products(a, b)
     fun sub(a: Expr, b:Expr) = Subscript(a, b)
+    fun sup(a: Expr, b:Expr) = Superscript(a, b)
+    fun sum(body: Expr, sup:Expr? = null, sub:Expr? = null) : SumExpr {
+        val sumExp = SumExpr(body)
+        assignSubSup(sumExp, sup, sub)
+        return sumExp
+    }
+    fun prod(body: Expr, sup:Expr? = null, sub:Expr? = null) : ProdExpr {
+        val prodExp = ProdExpr(body)
+        assignSubSup(prodExp, sup, sub)
+        return prodExp
+    }
+
+    private fun assignSubSup(mathExp: MathOpExpr, sup: Expr?, sub: Expr?) {
+        sup?.let {
+            mathExp.superScript = it
+        }
+        sub?.let {
+            mathExp.subScript = it
+        }
+    }
 }
 
 fun build(body: ExprBuilder.()->Expr) = ExprBuilder.body()
