@@ -43,7 +43,7 @@
             android:layout_height="46dp"
             android:id="@+id/buttonSuperscript" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
-            app:layout_constraintStart_toEndOf="@+id/buttonSubscript" android:layout_marginStart="8dp"/>
+            app:layout_constraintStart_toEndOf="@+id/buttonSubscript"/>
 
     <Button
             android:text="*"
@@ -51,7 +51,7 @@
             android:layout_height="46dp"
             android:id="@+id/buttonProducts" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
-            app:layout_constraintStart_toEndOf="@+id/buttonSuperscript" android:layout_marginStart="8dp"/>
+            app:layout_constraintStart_toEndOf="@+id/buttonSuperscript"/>
 
     <Button
             android:text="f(x)"
@@ -59,18 +59,18 @@
             android:layout_height="46dp"
             android:id="@+id/buttonFunction" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
-            app:layout_constraintStart_toEndOf="@+id/buttonProducts" android:layout_marginStart="8dp"/>
+            app:layout_constraintStart_toEndOf="@+id/buttonProducts"/>
     <Button
             android:text="sw"
             android:layout_width="54dp"
             android:layout_height="46dp"
             android:id="@+id/buttonSwitch" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/mathView"
-            app:layout_constraintStart_toEndOf="@+id/buttonFunction" android:layout_marginStart="8dp"/>
+            app:layout_constraintStart_toEndOf="@+id/buttonFunction"/>
 
     <Button
             android:text="w"
-            android:layout_width="54dp"
+            android:layout_width="41dp"
             android:layout_height="46dp"
             android:id="@+id/buttonWiden" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
@@ -78,20 +78,20 @@
             android:layout_marginStart="8dp"/>
     <Button
             android:text="Σ"
-            android:layout_width="54dp"
+            android:layout_width="41dp"
             android:layout_height="46dp"
             android:id="@+id/buttonSum" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
             app:layout_constraintStart_toEndOf="@+id/buttonWiden"
-            android:layout_marginStart="8dp"/>
+            />
     <Button
             android:text="Π"
-            android:layout_width="54dp"
+            android:layout_width="41dp"
             android:layout_height="46dp"
             android:id="@+id/buttonProd" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
             app:layout_constraintStart_toEndOf="@+id/buttonSum"
-            android:layout_marginStart="8dp"/>
+            />
     <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
