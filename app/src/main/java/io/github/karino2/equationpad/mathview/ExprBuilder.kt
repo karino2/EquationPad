@@ -8,6 +8,10 @@ object ExprBuilder {
         Subscript(a, b)
     fun sup(a: Expr, b: Expr) =
         Superscript(a, b)
+
+    fun eq(a: Expr, b:Expr) = EqualExpr(a, b)
+    fun vbar(a: Expr, b:Expr)= VerticalBarExpr(a, b)
+
     fun sum(body: Expr, sup: Expr? = null, sub: Expr? = null) : SumExpr {
         val sumExp = SumExpr(body)
         assignSubSup(sumExp, sup, sub)

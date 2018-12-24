@@ -97,6 +97,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.buttonEqual).setOnClickListener {
+            replaceWith {old->
+                val newTerm = EqualExpr(old, Variable("x"))
+                mathView.selectedExpr = newTerm.rightExpr
+                newTerm
+            }
+        }
+
+        findViewById<Button>(R.id.buttonVerticalBar).setOnClickListener {
+            replaceWith {old->
+                val newTerm = VerticalBarExpr(old, Variable("x"))
+                mathView.selectedExpr = newTerm.rightExpr
+                newTerm
+            }
+        }
+
 
         findViewById<Button>(R.id.buttonCopyLatex).setOnClickListener {
             copyToClipboard("\$\$${mathView.expr.toLatex()}\$\$")
