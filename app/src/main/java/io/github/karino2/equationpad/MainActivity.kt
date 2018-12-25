@@ -49,7 +49,8 @@ class MainActivity : AppCompatActivity() {
                 mathView.ifSelected { expr->
                     val name = editText.text.toString()
                     editText.setText("")
-                    replaceWithVar(name, expr)
+                    if(!name.isNullOrEmpty())
+                        replaceWithVar(name, expr)
                 }
                 true
             } else {
