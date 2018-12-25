@@ -79,6 +79,7 @@ sealed class Expr {
     fun toLatexTerm(expr: Expr, builder: java.lang.StringBuilder) {
         when(expr) {
             is Variable -> expr.toLatex(builder)
+            is Products -> expr.toLatex(builder) // already enclosed
             else -> {
                 builder.enclose("{ ", "}") {
                     expr.toLatex(it)

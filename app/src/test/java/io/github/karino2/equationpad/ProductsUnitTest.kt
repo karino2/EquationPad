@@ -19,4 +19,10 @@ class ProductsUnitTest {
         assertEquals("{ { a_n} c }", prod.toLatex())
     }
 
+    @Test
+    fun toLatexTerm_avoidUnnecessaryParen() {
+        val eqProducts = build {eq(v("a"), pro(v("b"), v("c")))}
+        assertEquals("a = { b c }", eqProducts.toLatex())
+    }
+
 }
