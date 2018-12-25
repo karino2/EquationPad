@@ -110,6 +110,14 @@
             app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
             app:layout_constraintStart_toEndOf="@+id/buttonEqual"/>
 
+    <Button
+            android:text=","
+            android:layout_width="41dp"
+            android:layout_height="46dp"
+            android:id="@+id/buttonComma" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/buttonCopyLatex"
+            app:layout_constraintStart_toEndOf="@+id/buttonVerticalBar"/>
+
     <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

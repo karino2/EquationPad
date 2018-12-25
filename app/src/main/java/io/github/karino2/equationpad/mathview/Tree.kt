@@ -447,6 +447,63 @@ class Products(a: Expr, b:Expr) : ExprGroup() {
     }
 }
 
+
+class CommaGroupExpr(a: Expr, b:Expr) : ExprGroup() {
+
+    var _commas :List<Variable> = emptyList()
+
+    val commas : List<Variable>
+    get() {
+        if(children.size == 0)
+            return emptyList()
+
+        if(_commas.size != children.size-1) {
+
+            val arrayList = ArrayList<Variable>()
+
+            repeat(children.size-1) { arrayList.add(Variable(",")) }
+            _commas = arrayList
+        }
+        return _commas
+    }
+
+    override fun draw(canvas: Canvas, scale: Float, paint: TextPaint) {
+        children.forEach{it.draw(canvas, scale, paint)}
+        commas.forEach{it.draw(canvas, scale, paint)}
+    }
+
+    override fun layout(left: Float, top: Float, currentSize: Float, measure: (String, Float) -> Float) {
+        children[0].layout(left, top, currentSize, measure)
+
+        (0 until children.size-1).forEach { i->
+            commas[i].layout(children[i].box.right, top, currentSize, measure)
+            children[i+1].layout(commas[i].box.right, top, currentSize, measure)
+        }
+
+        box.left = left
+        box.top = top
+        box.width = children.last().box.right - left
+        box.height = children.maxBy{it.box.height}!!.box.height
+    }
+
+    override fun toLatex(builder: StringBuilder) {
+        builder.enclose("{ ", "}") {
+            toLatexTerm(children[0], it)
+            for(child in children.drop(1)) {
+                it.append(", ")
+                toLatexTerm(child, it)
+            }
+        }
+
+    }
+
+    init {
+        addChild(a)
+        addChild(b)
+    }
+}
+
+
 // base class of sum and prod.
 
 abstract class MathOpExpr(val name: Variable, body: Expr) : ExprGroup() {

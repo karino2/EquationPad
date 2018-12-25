@@ -145,6 +145,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.buttonComma).setOnClickListener {
+            mathView.selectedExpr?.let {
+                when(it) {
+                    is CommaGroupExpr -> {
+                        val newNode = Variable("x")
+                        it.addChild(newNode)
+                        mathView.selectedExpr = newNode
+                    }
+                    else -> {
+                        replaceWith {oldExpr ->
+                            val newTerm = CommaGroupExpr(oldExpr, Variable("x"))
+                            mathView.selectedExpr = newTerm.children[1]
+                            newTerm
+                        }
+                    }
+                }
+                mathView.requestLayout()
+            }
+        }
+
         findViewById<Button>(R.id.buttonWiden).setOnClickListener {
             mathView.ifSelected { oldExpr->
                 when(oldExpr) {
