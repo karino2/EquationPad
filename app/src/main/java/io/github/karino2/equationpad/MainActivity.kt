@@ -20,6 +20,51 @@ class MainActivity : AppCompatActivity() {
         findViewById<EditText>(R.id.editText)
     }
 
+    fun generalFactoryHandler(rid: Int, factory: (old: Expr) -> Pair<Expr, Expr>) {
+        findViewById<Button>(rid).setOnClickListener {
+            replaceWith {old->
+                val (newTerm, selectTarget) = factory(old)
+                mathView.selectedExpr = selectTarget
+                newTerm
+            }
+        }
+
+    }
+
+    fun <T : Expr> genericFactoryHandler(rid: Int, factory: (old:Expr) -> T, targetSelector: (T) -> Expr) {
+        generalFactoryHandler(rid) { old ->
+            val newTerm = factory(old)
+            Pair(newTerm, targetSelector(newTerm))
+        }
+    }
+
+
+    fun infixFactoryHandler(rid: Int, factory : (Expr, Expr)->InfixExpr) {
+        genericFactoryHandler(rid, {factory(it, Variable("x"))}, {it.rightExpr})
+    }
+
+    inline fun <reified T:ExprGroup> replaceOrAddHandler(rid: Int, crossinline factory: (old:Expr, x:Expr)->T) {
+        findViewById<Button>(rid).setOnClickListener {
+            mathView.selectedExpr?.let {
+                when(it) {
+                    is T -> {
+                        val newNode = Variable("x")
+                        it.addChild(newNode)
+                        mathView.selectedExpr = newNode
+                    }
+                    else -> {
+                        replaceWith {oldExpr ->
+                            val newTerm = factory(oldExpr, Variable("x"))
+                            mathView.selectedExpr = newTerm.children[1]
+                            newTerm
+                        }
+                    }
+                }
+                mathView.requestLayout()
+            }
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,60 +104,17 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        findViewById<Button>(R.id.buttonSubscript).setOnClickListener {
-            replaceWith {old->
-                val (newTerm, selectTarget) = addSubscript(old)
-                mathView.selectedExpr = selectTarget
-                newTerm
-            }
-        }
+        generalFactoryHandler(R.id.buttonSubscript, ::addSubscript)
+        generalFactoryHandler(R.id.buttonSuperscript, ::addSuperscript)
 
-        findViewById<Button>(R.id.buttonSuperscript).setOnClickListener {
-            replaceWith {old->
-                val (newTerm, selectTarget) = addSuperscript(old)
-                mathView.selectedExpr = selectTarget
-                newTerm
-            }
-        }
+        genericFactoryHandler(R.id.buttonFunction, {FuncExpr(it, Variable("x"))}, {it.body})
 
-        findViewById<Button>(R.id.buttonFunction).setOnClickListener {
-            replaceWith {old->
-                val newTerm = FuncExpr(old, Variable("x"))
-                mathView.selectedExpr = newTerm.body
-                newTerm
-            }
-        }
+        fun replaceWholeHandler(rid: Int, factory : (Expr)->Expr) = genericFactoryHandler(rid, factory, {it})
+        replaceWholeHandler(R.id.buttonSum, ::SumExpr)
+        replaceWholeHandler(R.id.buttonProd, ::ProdExpr)
 
-        findViewById<Button>(R.id.buttonSum).setOnClickListener {
-            replaceWith {old->
-                val newTerm = SumExpr(old)
-                mathView.selectedExpr = newTerm
-                newTerm
-            }
-        }
-        findViewById<Button>(R.id.buttonProd).setOnClickListener {
-            replaceWith {old->
-                val newTerm = ProdExpr(old)
-                mathView.selectedExpr = newTerm
-                newTerm
-            }
-        }
-
-        findViewById<Button>(R.id.buttonEqual).setOnClickListener {
-            replaceWith {old->
-                val newTerm = EqualExpr(old, Variable("x"))
-                mathView.selectedExpr = newTerm.rightExpr
-                newTerm
-            }
-        }
-
-        findViewById<Button>(R.id.buttonVerticalBar).setOnClickListener {
-            replaceWith {old->
-                val newTerm = VerticalBarExpr(old, Variable("x"))
-                mathView.selectedExpr = newTerm.rightExpr
-                newTerm
-            }
-        }
+        infixFactoryHandler(R.id.buttonEqual, ::createEqualExpr)
+        infixFactoryHandler(R.id.buttonVerticalBar, ::createVerticalBarExpr)
 
 
         findViewById<Button>(R.id.buttonCopyLatex).setOnClickListener {
@@ -126,45 +128,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.buttonProducts).setOnClickListener {
-            mathView.selectedExpr?.let {
-                when(it) {
-                    is Products -> {
-                        val newNode = Variable("x")
-                        it.addChild(newNode)
-                        mathView.selectedExpr = newNode
-                    }
-                    else -> {
-                        replaceWith {oldExpr ->
-                            val newTerm = Products(oldExpr, Variable("x"))
-                            mathView.selectedExpr = newTerm.children[1]
-                            newTerm
-                        }
-                    }
-                }
-                mathView.requestLayout()
-            }
-        }
-
-        findViewById<Button>(R.id.buttonComma).setOnClickListener {
-            mathView.selectedExpr?.let {
-                when(it) {
-                    is CommaGroupExpr -> {
-                        val newNode = Variable("x")
-                        it.addChild(newNode)
-                        mathView.selectedExpr = newNode
-                    }
-                    else -> {
-                        replaceWith {oldExpr ->
-                            val newTerm = CommaGroupExpr(oldExpr, Variable("x"))
-                            mathView.selectedExpr = newTerm.children[1]
-                            newTerm
-                        }
-                    }
-                }
-                mathView.requestLayout()
-            }
-        }
+        replaceOrAddHandler(R.id.buttonProducts, ::Products)
+        replaceOrAddHandler(R.id.buttonComma, ::CommaGroupExpr)
 
         findViewById<Button>(R.id.buttonWiden).setOnClickListener {
             mathView.ifSelected { oldExpr->

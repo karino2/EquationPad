@@ -644,12 +644,14 @@ class ProdExpr(body: Expr) : MathOpExpr(Variable("Π"), body){
     }
 }
 
-abstract class InfixExpr(val op: Variable, left: Expr, right:Expr) : ExprGroup() {
+class InfixExpr(val op: Variable, val texText: String, left: Expr, right:Expr) : ExprGroup() {
     init {
         addChild(op)
         addChild(left)
         addChild(right)
     }
+
+    constructor(displayText: String, texText: String, left: Expr, right: Expr) : this(Variable(displayText), texText, left, right)
 
     override fun switch() {
         val (left, right) = Pair(children[1], children[2])
@@ -687,26 +689,15 @@ abstract class InfixExpr(val op: Variable, left: Expr, right:Expr) : ExprGroup()
         box.height = maxOf(leftExpr.box.height, op.box.height, rightExpr.box.height)
     }
 
-    abstract fun toLatexOp(builder: StringBuilder)
-
     override fun toLatex(builder: StringBuilder) {
         toLatexTerm(leftExpr, builder)
-        builder.append(" ")
-        toLatexOp(builder)
-        builder.append(" ")
+        builder.append(" ${texText} ")
         toLatexTerm(rightExpr, builder)
     }
 }
 
-class EqualExpr(left: Expr, right: Expr) : InfixExpr(Variable("="), left, right) {
-    override fun toLatexOp(builder: StringBuilder) {
-        builder.append("=")
-    }
-}
-class VerticalBarExpr(left: Expr, right: Expr) : InfixExpr(Variable("|"), left, right) {
-    override fun toLatexOp(builder: StringBuilder) {
-        builder.append("\\mid")
-    }
-}
+fun createEqualExpr(left: Expr, right:Expr) = InfixExpr("=", "=", left, right)
+
+fun createVerticalBarExpr(left: Expr, right: Expr) = InfixExpr("|", "\\mid", left, right)
 
 
