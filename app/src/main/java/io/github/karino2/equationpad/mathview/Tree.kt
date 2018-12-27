@@ -697,7 +697,7 @@ class InfixExpr(val op: Variable, val texText: String, left: Expr, right:Expr) :
 }
 
 fun createEqualExpr(left: Expr, right:Expr) = InfixExpr("=", "=", left, right)
-
 fun createVerticalBarExpr(left: Expr, right: Expr) = InfixExpr("|", "\\mid", left, right)
+fun createRArrowExpr(left: Expr, right:Expr) = InfixExpr("→", "\\rightarrow", left, right)
 
 

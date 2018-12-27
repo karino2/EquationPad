@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity() {
 
         infixFactoryHandler(R.id.buttonEqual, ::createEqualExpr)
         infixFactoryHandler(R.id.buttonVerticalBar, ::createVerticalBarExpr)
-
+        infixFactoryHandler(R.id.buttonRArrow, ::createRArrowExpr)
 
         findViewById<Button>(R.id.buttonCopyLatex).setOnClickListener {
             copyToClipboard("\$\$${mathView.expr.toLatex()}\$\$")
